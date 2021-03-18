@@ -78,13 +78,22 @@ public:
     /** This should be set via call to GetUBIKSettings, typically from "Event Blueprint Begin Play" **/
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
     float UpperArmsDistance = 0.f;
+    
+    /** This should be set via call to GetUBIKSettings, typically from "Event Blueprint Begin Play" **/
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+    FVector LocalHandOffsetLeft;
 
     /** This should be set via call to GetUBIKSettings, typically from "Event Blueprint Begin Play" **/
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
-    FVector LocalHandOffset;
+    FVector LocalHandOffsetRight;
 
+    /** This should be set via call to GetUBIKSettings, typically from "Event Blueprint Begin Play" **/
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
-    FRotator LocalHandRotationOffset;
+    FRotator LocalHandRotationOffsetLeft;
+
+    /** This should be set via call to GetUBIKSettings, typically from "Event Blueprint Begin Play" **/
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+    FRotator LocalHandRotationOffsetRight;
     
     /** This should be set via call to GetUBIKSettings, typically from "Event Blueprint Begin Play" **/
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
@@ -151,10 +160,18 @@ public:
     /** Local Hand Offset that will be applied to MotionController transforms (LeftHandTransformW and RightHandTransformW) to better fit with your mesh.
     * These may vary for each type of MotionController too, so make sure to adjust this accordingly. **/
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
-    FVector LocalHandOffset = FVector(14.f, -2.f, 0.f);
+    FVector LocalHandOffsetLeft = FVector(14.f, -2.f, 0.f);
+
+    /** Local Hand Offset that will be applied to MotionController transforms (LeftHandTransformW and RightHandTransformW) to better fit with your mesh.
+    * These may vary for each type of MotionController too, so make sure to adjust this accordingly. **/
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+    FVector LocalHandOffsetRight = FVector(14.f, -2.f, 0.f);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
-    FRotator LocalHandRotationOffset = FRotator(0.0f, 0.0f, 0.0f);
+    FRotator LocalHandRotationOffsetLeft = FRotator(0.0f, 0.0f, 0.0f);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+    FRotator LocalHandRotationOffsetRight = FRotator(0.0f, 0.0f, 0.0f);
 
     /** Determine where Shoulder rotation comes from. Pr. default it will be weighted between Hands position and Head direction. 
     * 0 = Head. UpperBody (Shoulder base) will be controlled entirely by Head direction.

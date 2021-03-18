@@ -269,18 +269,18 @@ void FAnimNode_UBIKSolver::ConvertTransforms()
 
     //UE_LOG(LogUBIKRuntime, Display, TEXT("1:LeftHandTransformW: %s"), *LeftHandTransformW.GetTranslation().ToString());
     //UE_LOG(LogUBIKRuntime, Display, TEXT("Settings.LocalHandOffset: %s"), *Settings.LocalHandOffset.GetTranslation().ToString());
-    LeftHandTransformWorld = UUBIK::AddLocalOffset(InLeftHandTransformWorld, Settings.LocalHandOffset);
-    LeftHandTransformWorld.SetRotation(LeftHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffset.Pitch,
-                                                                            Settings.LocalHandRotationOffset.Yaw,
-                                                                            Settings.LocalHandRotationOffset.Roll).Quaternion());
+    LeftHandTransformWorld = UUBIK::AddLocalOffset(InLeftHandTransformWorld, Settings.LocalHandOffsetLeft);
+    LeftHandTransformWorld.SetRotation(LeftHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffsetLeft.Pitch,
+                                                                            Settings.LocalHandRotationOffsetLeft.Yaw,
+                                                                            Settings.LocalHandRotationOffsetLeft.Roll).Quaternion());
     //DebugDrawAxes(LeftHandTransformW, true);
 
     //UE_LOG(LogUBIKRuntime, Display, TEXT("2:LeftHandTransformW: %s"), *LeftHandTransformW.GetTranslation().ToString());
     // Mirror Y-direction otherwise it will move opposite ways.
-    RightHandTransformWorld = UUBIK::AddLocalOffset(InRightHandTransformWorld, Settings.LocalHandOffset * FVector(1.f, -1.f, 1.f));
-    RightHandTransformWorld.SetRotation(RightHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffset.Pitch,
-                                                                              Settings.LocalHandRotationOffset.Yaw,
-                                                                              Settings.LocalHandRotationOffset.Roll).Quaternion());
+    RightHandTransformWorld = UUBIK::AddLocalOffset(InRightHandTransformWorld, Settings.LocalHandOffsetRight);
+    RightHandTransformWorld.SetRotation(RightHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffsetRight.Pitch,
+                                                                              Settings.LocalHandRotationOffsetRight.Yaw,
+                                                                              Settings.LocalHandRotationOffsetRight.Roll).Quaternion());
 
 
     HeadTransformComponentSpace = InHeadTransformWorld * ComponentSpace;

@@ -26,8 +26,13 @@ FUBIKSettings UUBIK::Initialize(FUBIKDefaults Defaults, FUBIKCalibrationData Cal
 	Settings.OkSpanAngle = Defaults.OkSpanAngle;
 	Settings.BaseCharOffset = Defaults.BaseCharOffset;
 	Settings.BodyInterSpeed = Defaults.BodyInterSpeed;
-	Settings.LocalHandOffset = Defaults.LocalHandOffset;
-	Settings.LocalHandRotationOffset = Defaults.LocalHandRotationOffset;
+
+	Settings.LocalHandOffsetLeft = Defaults.LocalHandOffsetLeft;
+	Settings.LocalHandRotationOffsetLeft = Defaults.LocalHandRotationOffsetLeft;
+
+	Settings.LocalHandOffsetRight = Defaults.LocalHandOffsetRight;
+	Settings.LocalHandRotationOffsetRight = Defaults.LocalHandRotationOffsetRight;
+	
 	Settings.ShoulderHeadHandAlpha = Defaults.ShoulderHeadHandAlpha;
 	return Settings;
 }
