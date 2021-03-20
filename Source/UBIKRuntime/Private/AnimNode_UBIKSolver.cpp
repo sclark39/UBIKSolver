@@ -14,9 +14,14 @@ FAnimNode_UBIKSolver::FAnimNode_UBIKSolver(): Super(),
                                               bIgnorePelvisLocation(false),
                                               bApplyBoneAxis(false),
                                               BoneAxis(EBoneAxis::BA_Y),
-                                              bDrawDebug(false)
-
-
+                                              bDrawDebug(false),
+                                              SkeletalMeshComponent(nullptr),
+                                              World(nullptr),
+                                              CachedDeltaTime(0),
+                                              LeftHeadHandAngle(0),
+                                              RightHeadHandAngle(0),
+                                              LeftElbowHandAngle(0),
+                                              RightElbowHandAngle(0)
 {
 }
 
