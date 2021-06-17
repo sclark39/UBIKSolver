@@ -14,9 +14,14 @@ FAnimNode_UBIKSolver::FAnimNode_UBIKSolver(): Super(),
                                               bIgnorePelvisLocation(false),
                                               bApplyBoneAxis(false),
                                               BoneAxis(EBoneAxis::BA_Y),
-                                              bDrawDebug(false)
-
-
+                                              bDrawDebug(false),
+                                              SkeletalMeshComponent(nullptr),
+                                              World(nullptr),
+                                              CachedDeltaTime(0),
+                                              LeftHeadHandAngle(0),
+                                              RightHeadHandAngle(0),
+                                              LeftElbowHandAngle(0),
+                                              RightElbowHandAngle(0)
 {
 }
 
@@ -72,23 +77,23 @@ void FAnimNode_UBIKSolver::EvaluateSkeletalControl_AnyThread(FComponentSpacePose
     }
 #endif
 
-    HeadRotation = UKismetMathLibrary::ComposeRotators(FRotator(90.f, 0.f, 90.f), HeadTransformComponentSpace.Rotator());
+    HeadRotation = UKismetMathLibrary::ComposeRotators(HeadRotationOffset, HeadTransformComponentSpace.Rotator());
     Spine03_Rotation = FMath::RInterpTo(Spine03_Rotation, BaseCharTransformComponentSpace.Rotator(), CachedDeltaTime,
                                         Settings.BodyInterSpeed);
     Spine02_Rotation = FMath::RInterpTo(Spine02_Rotation, Spine03_Rotation, CachedDeltaTime, Settings.BodyInterSpeed);
     Spine01_Rotation = FMath::RInterpTo(Spine01_Rotation, Spine02_Rotation, CachedDeltaTime, Settings.BodyInterSpeed);
-    PelvisRotation = FTransform(UKismetMathLibrary::ComposeRotators(FRotator(90.f, 0.f, 90.f), Spine01_Rotation),
+    PelvisRotation = FTransform(UKismetMathLibrary::ComposeRotators(PelvisRotationOffset, Spine01_Rotation),
                                 BaseCharTransformComponentSpace.GetTranslation(), FVector::OneVector);
 
     ClavicleLRotation = LeftClavicleComponentSpace.Rotator();
     UpperArmLRotation = LeftUpperArmTransformComponentSpace.Rotator();
     LowerArmLRotation = LeftLowerArmTransformComponentSpace.Rotator();
-    HandLRotation = FRotator(LeftHandTransformComponentSpace.Rotator().Quaternion() * FRotator(0.f, -25.f, 180.f).Quaternion());
+    HandLRotation = FRotator(LeftHandTransformComponentSpace.Rotator().Quaternion() * HandLRotationOffset.Quaternion());
 
-    ClavicleRRotation = FRotator(RightClavicleComponentSpace.Rotator().Quaternion() * FRotator(180.f, 0.f, 0.f).Quaternion());
-    UpperArmRRotation = FRotator(RightUpperArmTransformComponentSpace.Rotator().Quaternion() * FRotator(0.f, 180.f, 180.f).Quaternion());
-    LowerArmRRotation = FRotator(RightLowerArmTransformComponentSpace.Rotator().Quaternion() * FRotator(0.f, 180.f, 180.f).Quaternion());
-    HandRRotation = FRotator(RightHandTransformComponentSpace.Rotator().Quaternion() * FRotator(180.f, 25.f, 180.f).Quaternion());
+    ClavicleRRotation = FRotator(RightClavicleComponentSpace.Rotator().Quaternion() * ClavicleRRotationOffset.Quaternion());
+    UpperArmRRotation = FRotator(RightUpperArmTransformComponentSpace.Rotator().Quaternion() * UpperArmRRotationOffset.Quaternion());
+    LowerArmRRotation = FRotator(RightLowerArmTransformComponentSpace.Rotator().Quaternion() * LowerArmRRotationOffset.Quaternion());
+    HandRRotation = FRotator(RightHandTransformComponentSpace.Rotator().Quaternion() * HandRRotationOffset.Quaternion());
 
     const FBoneContainer& BoneContainer = Output.Pose.GetPose().GetBoneContainer();
 
@@ -99,13 +104,13 @@ void FAnimNode_UBIKSolver::EvaluateSkeletalControl_AnyThread(FComponentSpacePose
         SetBoneTransform(SortedBoneTransform, PelvisBoneToModify, PelvisRotation, Output, BoneContainer, true, !bIgnorePelvisLocation);
 
         SetBoneTransform(SortedBoneTransform, Spine01_BoneToModify,
-                         FTransform(UKismetMathLibrary::ComposeRotators(FRotator(83.f, 0.f, 90.f), Spine01_Rotation)), Output,
+                         FTransform(UKismetMathLibrary::ComposeRotators(Spine1RotationOffset, Spine01_Rotation)), Output,
                          BoneContainer, true);
         SetBoneTransform(SortedBoneTransform, Spine02_BoneToModify,
-                         FTransform(UKismetMathLibrary::ComposeRotators(FRotator(104.0f, 0.f, 90.f), Spine02_Rotation)), Output,
+                         FTransform(UKismetMathLibrary::ComposeRotators(Spine2RotationOffset, Spine02_Rotation)), Output,
                          BoneContainer, true);
         SetBoneTransform(SortedBoneTransform, Spine03_BoneToModify,
-                         FTransform(UKismetMathLibrary::ComposeRotators(FRotator(86.22f, 0.f, 90.f), Spine03_Rotation)), Output,
+                         FTransform(UKismetMathLibrary::ComposeRotators(Spine3RotationOffset, Spine03_Rotation)), Output,
                          BoneContainer, true);
         SetBoneTransform(SortedBoneTransform, HeadBoneToModify, FTransform(HeadRotation), Output, BoneContainer, true);
     }
@@ -151,9 +156,9 @@ void FAnimNode_UBIKSolver::SetBoneTransform(TArray<FBoneTransform>& OutBoneTrans
             {
                 const FVector RotationAxis = GetAxisVector(BoneAxis);
 
-                // Fix per-skeleton bone orientation by composing given rotation with BoneAxis dir * 90.0f 
+                // Fix per-skeleton bone orientation by composing given rotation with BoneAxis dir * 90.0f (or RotationAxisMult)
                 NewBoneTransform.SetRotation(
-                    UKismetMathLibrary::ComposeRotators(FRotator(RotationAxis.X * 90.0f, RotationAxis.Y * 90.0f, RotationAxis.Z * 90.0f),
+                    UKismetMathLibrary::ComposeRotators(FRotator(RotationAxis.X * RotationAxisMult, RotationAxis.Y * RotationAxisMult, RotationAxis.Z * RotationAxisMult),
                                                         InTransform.Rotator()).Quaternion());
             }
             else
@@ -269,18 +274,18 @@ void FAnimNode_UBIKSolver::ConvertTransforms()
 
     //UE_LOG(LogUBIKRuntime, Display, TEXT("1:LeftHandTransformW: %s"), *LeftHandTransformW.GetTranslation().ToString());
     //UE_LOG(LogUBIKRuntime, Display, TEXT("Settings.LocalHandOffset: %s"), *Settings.LocalHandOffset.GetTranslation().ToString());
-    LeftHandTransformWorld = UUBIK::AddLocalOffset(InLeftHandTransformWorld, Settings.LocalHandOffset);
-    LeftHandTransformWorld.SetRotation(LeftHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffset.Pitch,
-                                                                            Settings.LocalHandRotationOffset.Yaw,
-                                                                            Settings.LocalHandRotationOffset.Roll).Quaternion());
+    LeftHandTransformWorld = UUBIK::AddLocalOffset(InLeftHandTransformWorld, Settings.LocalHandOffsetLeft);
+    LeftHandTransformWorld.SetRotation(LeftHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffsetLeft.Pitch,
+                                                                            Settings.LocalHandRotationOffsetLeft.Yaw,
+                                                                            Settings.LocalHandRotationOffsetLeft.Roll).Quaternion());
     //DebugDrawAxes(LeftHandTransformW, true);
 
     //UE_LOG(LogUBIKRuntime, Display, TEXT("2:LeftHandTransformW: %s"), *LeftHandTransformW.GetTranslation().ToString());
     // Mirror Y-direction otherwise it will move opposite ways.
-    RightHandTransformWorld = UUBIK::AddLocalOffset(InRightHandTransformWorld, Settings.LocalHandOffset * FVector(1.f, -1.f, 1.f));
-    RightHandTransformWorld.SetRotation(RightHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffset.Pitch,
-                                                                              Settings.LocalHandRotationOffset.Yaw,
-                                                                              Settings.LocalHandRotationOffset.Roll).Quaternion());
+    RightHandTransformWorld = UUBIK::AddLocalOffset(InRightHandTransformWorld, Settings.LocalHandOffsetRight);
+    RightHandTransformWorld.SetRotation(RightHandTransformWorld.Rotator().Add(Settings.LocalHandRotationOffsetRight.Pitch,
+                                                                              Settings.LocalHandRotationOffsetRight.Yaw,
+                                                                              Settings.LocalHandRotationOffsetRight.Roll).Quaternion());
 
 
     HeadTransformComponentSpace = InHeadTransformWorld * ComponentSpace;
